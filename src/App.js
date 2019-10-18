@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import logo from './logo.svg';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
-import { Form, FormControl, Row, Col, Card, Button, Carousel, Navbar, Nav, NavDropdown } from 'react-bootstrap'
-
+import { Form, FormControl, Row, Col, Card, Button, Carousel, Navbar, Nav, NavDropdown, DropdownItem } from 'react-bootstrap'
+import {GENRES} from './utils/genres'
 
 function TopCarousel() {
   return (
@@ -45,29 +45,46 @@ function TopCarousel() {
   )
 }
 
+
+
 function Navigation(props) {
+  let allGenreIds = []
+  props.movies.map(movie => allGenreIds.push(movie.genre_ids))
+  allGenreIds = allGenreIds.flat(Infinity) 
+  
+  let currentGenreList = GENRES.filter(genre => allGenreIds.includes(genre.id))
+  
+  function genreFilter(id) {
+    props.setFilteredMovies(props.movies.filter(movie  =>  movie.genre_ids.includes(id)))
+  }
+
+
   return (
     <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
-      <Navbar.Brand href="#home">React-Bootstrap</Navbar.Brand>
+      <Navbar.Brand href="#home"></Navbar.Brand>
       <Navbar.Toggle aria-controls="responsive-navbar-nav" />
       <Navbar.Collapse id="responsive-navbar-nav">
         <Nav className="mr-auto">
-          <Nav.Link href="#features">Features</Nav.Link>
-          <Nav.Link href="#pricing">Pricing</Nav.Link>
-          <NavDropdown title="Filter" id="collasible-nav-dropdown">
-            <NavDropdown.Item href="#action/3.1">Top Rated</NavDropdown.Item>
-            <NavDropdown.Item href="#action/3.2">Most Popular</NavDropdown.Item>
-            <NavDropdown.Item href="#action/3.3">New Releases</NavDropdown.Item>
-            <NavDropdown.Divider />
-            <NavDropdown.Item href="#action/3.4">Coming Soon</NavDropdown.Item>
+          <Nav.Link href="#action/3.1" onClick={props.getTopRated}>Top Rated</Nav.Link>
+          <Nav.Link href="#action/3.2" onClick={props.getPopular}>Most Popular</Nav.Link>
+          <Nav.Link href="#action/3.3" onClick={props.getUpcomingReleases}>Upcoming Releases</Nav.Link>
+          <NavDropdown title="Filter" id="collapsible-nav-dropdown" >
+            
+          
+           {currentGenreList.map(genre => {
+           return <DropdownItem href="#filter" onClick={() => genreFilter(genre.id)} value={genre.id}>{genre.name}  </DropdownItem>
+           })}
+             
+
+              
           </NavDropdown>
         </Nav>
         <Nav>
-          <Form inline onSubmit={() => props.getTMBD(props.query)} onChange={event => props.setQuery(event.target.value)} >
+          <Form inline onSubmit={(event) => props.getSearchResults(event)} onChange={event => props.setQuery(event.target.value)} >
             <FormControl type="text" placeholder="Search" className="mr-sm-2" />
             <Button type="submit" variant="outline-success">Search</Button>
           </Form>
-          <Nav.Link href="#deets">More deets</Nav.Link>
+          
           <Nav.Link eventKey={2} href="https://www.dictionary.com/e/slang/dank-meme/">
             Dank memes
             </Nav.Link>
@@ -75,44 +92,32 @@ function Navigation(props) {
       </Navbar.Collapse>
     </Navbar>
   )
+
 }
 
-// function ToastMessage() {
-//   const [showA, setShowA] = useState(true);
-//   const toggleShowA = () => setShowA(!showA);
+// function Genres(props) {
+//   genreName.map((genre) => {
 //   return (
-//     // <Row>
-//     //   <Col xs={6}>
-//         <Toast className="toast" show={showA} onClose={toggleShowA}>
-//           <Toast.Header>
-//             <img
-//               src="holder.js/20x20?text=%20"
-//               className="rounded mr-2"
-//               alt=""
-//             />
-//             <strong className="mr-auto">Bootstrap</strong>
-//             <small>11 mins ago</small>
-//           </Toast.Header>
-//           <Toast.Body>Woohoo, you're reading this text in a Toast!</Toast.Body>
-//         </Toast>
-//     //   </Col>
-//     // </Row>
-//   )
+//     <NavDropdown.Item href='#action' >{props.GENRES.name} </NavDropdown.Item>
+//   })
 // }
 
+
+
 function MovieCard(props) {
+ 
+
   return (
     <div className="flip-card col-4-md">  
       <Card className="container-fluid  h-100 " style={{ width: '20rem' }}> 
-        <div class="flip-card-inner align-items-center ">   
-          <div class="flip-card-front mx-auto"> 
-
+        <div className="flip-card-inner align-items-center ">   
+          <div className="flip-card-front mx-auto"> 
             <Card.Img
               variant="top"
               src={`https://image.tmdb.org/t/p/original/${props.movie && props.movie.poster_path}`}
             />
           </div>
-          <div class="flip-card-back mx-auto">
+          <div className="flip-card-back mx-auto">
             <Card.Body >  
               <Card.Title>{props.movie.title}</Card.Title>
               <Card.Text>
@@ -125,54 +130,100 @@ function MovieCard(props) {
         </div>
       </Card>
     </div>
-
   )
-
 }
-
 
 
 function App() {
   const [movies, setMovies] = useState([]);
+  const [filteredMovies, setFilteredMovies] = useState([])
   const [pageNumber, setPageNumber] = useState(1);
-  const [query, setQuery] = useState('')
-
-
+  const [query, setQuery] = useState('');
+  const [genre, setGenre] = useState('');
+  console.log("query", query)
   useEffect(() => {
     getTMDB()
   }, []);
+
   const getTMDB = async () => {
+   
     const apiKey = "13aa7028a9a45c7bfe58d96beb50f819"
-    const url = `https://api.themoviedb.org/3/trending/all/week?api_key=${apiKey}&page=${pageNumber}&query=${query}`
+    const url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&page=${pageNumber} `
     const response = await fetch(url)
     const data = await response.json()
     const currentMovieArray = movies.concat(data.results)
     setMovies(currentMovieArray)
+    setFilteredMovies(currentMovieArray)
     setPageNumber(pageNumber + 1)
-    console.log(currentMovieArray)
   }
+  
 
-
-  const getSearchResults = async () => {
+  const getSearchResults = async (event) => {
+    event && event.preventDefault()
+    console.log('wejewkjdew', query)
     const apiKey = "13aa7028a9a45c7bfe58d96beb50f819"
     const url = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${query}`
     const response = await fetch(url)
     const data = await response.json()
-    console.log('datatdsearch', data)
-    setPageNumber(pageNumber + 1)
+    const currentMovieArray = data.results
+    setMovies(currentMovieArray)
+    setFilteredMovies(currentMovieArray)
+    
+  }
+ 
+  const getTopRated = async () => {
+    const apiKey = "13aa7028a9a45c7bfe58d96beb50f819"
+    const url= `https://api.themoviedb.org/3/movie/top_rated?api_key=${apiKey}&language=en-US&page=1`
+    const response = await fetch(url)
+    const data = await response.json()
+    const currentMovieArray = data.results
+    setMovies(currentMovieArray)
+    setFilteredMovies(currentMovieArray)
+    
   }
 
+  const getUpcomingReleases = async () => {
+    const apiKey = "13aa7028a9a45c7bfe58d96beb50f819"
+    const url= `https://api.themoviedb.org/3/movie/upcoming?api_key=${apiKey}&language=en-US&page=1`
+    const response = await fetch(url)
+    const data = await response.json()
+    const currentMovieArray = data.results
+    setMovies(currentMovieArray)
+    setFilteredMovies(currentMovieArray)
+    
+  }
+
+  const getPopular = async () => {
+    const apiKey = "13aa7028a9a45c7bfe58d96beb50f819"
+    const url= `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=en-US&page=1`
+    const response = await fetch(url)
+    const data = await response.json()
+    const currentMovieArray = data.results
+    setMovies(currentMovieArray)
+    setFilteredMovies(currentMovieArray)
+    
+  }
+  
   return (
     <div className="App">
       <Navigation
+        query={query}
         setQuery={setQuery}
         getSearchResults={getSearchResults}
+        getTopRated={getTopRated}
+        getUpcomingReleases = {getUpcomingReleases}
+        getPopular ={getPopular}
+        movies={movies}
+        setFilteredMovies={setFilteredMovies}
       />
       {/* <ToastMessage /> */}
       {/* <TopCarousel /> */}
-      <div className="row " >
-        {movies.map((movie) => {
-          return <MovieCard movie={movie} />
+      <div className="row" >
+        {filteredMovies.map((movie) => {
+          return <MovieCard 
+          movie={movie} 
+         
+          />
         })}
       </div>
       <Row>
