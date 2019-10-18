@@ -2,11 +2,8 @@
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-}
 
-.App-header {
+/* .App-header {
   background-color: #282c34;
   min-height: 100vh;
   display: flex;
@@ -15,8 +12,74 @@
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
-}
+} */
 
 .App-link {
   color: #09d3ac;
 }
+
+
+.card-body {
+  max-height: 430px;
+  overflow-y: scroll;
+}
+
+.flip-card {
+  background-color:transparent;
+  width: auto;
+  height: auto;
+ 
+  perspective: 1000px; 
+  
+}
+
+/* This container is needed to position the front and back side */
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+}
+
+/* Do an horizontal flip when you move the mouse over the flip box container */
+.flip-card:hover .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+/* Position the front and back side */
+.flip-card-front, .flip-card-back {
+  
+  backface-visibility: hidden;
+}
+
+/* Style the front side (fallback if image is missing) */
+.flip-card-front {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+}
+
+/* Style the back side */
+.flip-card-back {
+  justify-content: center;
+  min-height: inherit;
+  width: 100%;
+  height: 100%;
+  background-color: dodgerblue;
+  color: white;
+  transform: rotateY(180deg);
+  
+}
+
+.btn {
+  background-color: dodgerblue;
+  color: white;
+}
+
+
+
+
+
